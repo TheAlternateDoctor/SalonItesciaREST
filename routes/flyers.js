@@ -1,5 +1,5 @@
 var express = require('express');
-var controller = require("../controllers/formations.js");
+var controller = require("../controllers/flyers.js");
 const { check } = require('express-validator');
 var oauth = require("express-oauth-server");
 
@@ -25,8 +25,7 @@ module.exports = (router, app) =>{
   router.post('/',
     app.oauth.authenticate(),
     check('nom').not().isEmpty().trim().escape(),
-    check('representant').not().isEmpty().trim().escape(),
-    check('forms').not().isEmpty().trim().escape(),
+    check('flyer').not().isEmpty().trim().escape(),
     function(req, res) {
     var data = req.body;
     controller.create(data["nom"],data["representant"],data["forms"]).then(result => {

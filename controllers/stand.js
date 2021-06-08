@@ -1,9 +1,10 @@
 const createHttpError = require("http-errors");
+const fs = require('fs')
 var db = require("../config/dbConfig.js");
 
 async function findAll(){
     var hasError = null;
-    const results = await db.pool.query("SELECT * FROM stands").catch(error => hasError = error);
+    const results = await db.pool.query("SELECT id, meet, ecranType FROM stands").catch(error => hasError = error);
     if(hasError==null){
         var message = '{ "success": true,'+
         '"results":'+ JSON.stringify(results[0])+"}";
@@ -17,8 +18,7 @@ async function findAll(){
 
 async function find(id){ 
     var hasError = null;
-    const results = await db.pool.query("SELECT * FROM stands WHERE id = "+id).catch(error => hasError = error);
-    console.log(results[0].length);
+    const results = await db.pool.query("SELECT id, meet, ecranType FROM stands WHERE id = "+id).catch(error => hasError = error);
     if(hasError==null && results[0].length != 0){
         var message = '{ "success": true,'+
         '"results":'+ JSON.stringify(results[0][0])+"}";
@@ -35,11 +35,60 @@ async function find(id){
     }
 }
 
-async function create(nom, representant, forms = null){
+async function findFlyer(id){ 
     var hasError = null;
-    if(forms === null)
-        forms = ""
-    const results = await db.pool.query("INSERT INTO `stands` (`nom`, `representant`, `forms`) VALUES ('"+nom+"', '"+representant+"', '"+forms+"');").catch(error => hasError = error);
+    const results = await db.pool.query("SELECT flyer FROM stands WHERE id = "+id).catch(error => hasError = error);
+    if(hasError==null && results[0].length != 0){
+        return results[0][0]["flyer"];
+    }
+    else if(hasError!=null){
+        var message = '{ "success":false,'+
+        '"message":"'+hasError.message+'"}';
+        return message;
+    }
+    else {
+        var message = '{ "success":false,"message":"No object for id '+id+'"}';
+        return message;
+    }
+}
+
+async function findFormations(id){ 
+    var hasError = null;
+    const results = await db.pool.query("SELECT * FROM `formations` WHERE id = (SELECT idFormation FROM `lienformationstand` WHERE idStand="+id+")").catch(error => hasError = error);
+    if(hasError==null && results[0].length != 0){
+        var message = '{ "success": true,'+
+        '"results":'+ JSON.stringify(results[0][0])+"}";
+        return message;
+    }
+    else if(hasError!=null){
+        var message = '{ "success":false,'+
+        '"message":"'+hasError.message+'"}';
+        return message;
+    }
+    else {
+        var message = '{ "success":false,"message":"No object for id '+id+'"}';
+        return message;
+    }
+}
+
+async function create(meet = null){
+    var hasError = null;
+    console.log("INSERT INTO `stands` (`meet`) VALUES ('"+meet+"');");
+    const results = await db.pool.query("INSERT INTO `stands` (`meet`) VALUES ('"+meet+"') RETURNING id, meet, ecranType;").catch(error => hasError = error);
+    if(hasError==null){
+        var message = '{ "success":true, "data":'+JSON.stringify(results[0])+"}";
+        return message;
+    } else {
+        var message = '{ "success":false,'+
+        '"message":"'+hasError.message+'"}';
+        return message;
+    }
+}
+
+async function createFormation(id,idFormation){
+    var hasError = null;
+    console.log("INSERT INTO `stands` (`idFormation`, `idStand`) VALUES ("+idFormation+", '"+id+"');");
+    const results = await db.pool.query("INSERT INTO `lienformationstand` (`idFormation`, `idStand`) VALUES ("+idFormation+", '"+id+"');").catch(error => hasError = error);
     if(hasError==null){
         var message = '{ "success":true, "id":'+JSON.stringify(results[0]["insertId"])+"}";
         return message;
@@ -50,23 +99,36 @@ async function create(nom, representant, forms = null){
     }
 }
 
-async function update(id, nom, representant, forms){
+async function update(id, idFormation, meet){
     var hasError = null;
     var updated = false;
     var query = "UPDATE stands SET ";
-    if(nom != ''){
-        query += "nom = '"+nom+"'";
+    if(idFormation != ''){
+        query += "idFormation = "+idFormation+"";
         updated = true;
     }
-    if(representant != ''){
+    if(meet != ''){
         if(updated) query+=','
-        query += "representant = '"+representant+"'";
+        query += "meet = '"+meet+"'";
         updated = true;
     }
-    if(forms != ''){
-        if(updated) query+=','
-        query += "forms = '"+forms+"'";
+    query += "WHERE id = "+id;
+    const results = await db.pool.query(query).catch(error => hasError = error);
+    if(hasError==null){
+        var message = '{ "success":true }';
+        return message;
+    } else {
+        var message = '{ "success":false,'+
+        '"message":"'+hasError.message+'"}';
+        return message;
     }
+}
+
+async function updateFlyer(flyer){
+    var hasError = null;
+    var updated = false;
+    var query = "UPDATE stands SET ";
+    query += "flyer = '"+flyer+"'";
     query += "WHERE id = "+id;
     const results = await db.pool.query(query).catch(error => hasError = error);
     if(hasError==null){
@@ -92,4 +154,4 @@ async function destroy(id){
     }
 }
 
-module.exports = {findAll,find,create,update,destroy};
+module.exports = {findAll,find,findFormations,findFlyer,create,createFormation,update,updateFlyer,destroy};

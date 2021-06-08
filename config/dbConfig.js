@@ -3,6 +3,7 @@ var pool = mysql.createPool({
     waitForConnections  : true,
     connectionLimit     : 10,
     host                : 'localhost',
+    port                : 3307,
     user                : 'root',
     database            : 'itescia'
 }).promise();

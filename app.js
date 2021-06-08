@@ -21,6 +21,7 @@ app.oauth = new oAuthServer({
 
 var formationsRouter = require('./routes/formations')(express.Router(), app);
 var standsRouter = require('./routes/stand');
+var eventsRouter = require('./routes/event');
 
 app.post('/oauth/token', app.oauth.token());
 
@@ -45,6 +46,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/v1/formations', formationsRouter);
 app.use('/v1/stands', standsRouter);
+app.use('/v1/events', eventsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -61,5 +63,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 module.exports = app;

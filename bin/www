@@ -9,6 +9,39 @@ var debug = require('debug')('salonitesciarest:server');
 var http = require('http');
 
 /**
+ * Set Swagger API doc generation
+ */
+
+ const expressSwagger = require('express-swagger-generator')(app);
+ let options = {
+  swaggerDefinition: {
+      info: {
+          description: "Serveur de l'API pour le système de salon virtuel d'ESIEE IT",
+          title: 'ESIEE-REST',
+          version: '1.0.0',
+      },
+      host: 'localhost:3000',
+      basePath: '/v1',
+      produces: [
+          "application/json",
+          "application/xml"
+      ],
+      schemes: ['http', 'https'],
+      securityDefinitions: {
+          JWT: {
+              type: 'apiKey',
+              in: 'header',
+              name: 'Authorization',
+              description: "",
+          }
+      }
+  },
+  basedir: __dirname, //app absolute path
+  files: ['./routes/*.js'] //Path to the API handle folder
+};
+expressSwagger(options)
+
+/**
  * Get port from environment and store in Express.
  */
 
