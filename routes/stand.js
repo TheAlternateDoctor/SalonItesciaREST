@@ -39,6 +39,15 @@ router.get('/:id/flyers', function (req, res) {
     return;
   });
 });
+/*GET l'écran de la formation*/
+router.get('/:id/ecran', function (req, res) {
+  const { id } = req.params;
+  controller.findEcran(id).then(result => {
+    res.setHeader('content-type', 'image/png')
+    res.end(result);
+    return;
+  });
+});
 
 /*POST un stand*/
 router.post('/',

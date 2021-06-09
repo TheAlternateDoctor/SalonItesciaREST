@@ -35,11 +35,11 @@ async function find(id){
     }
 }
 
-async function findFlyer(id){ 
+async function findEcran(id){ 
     var hasError = null;
-    const results = await db.pool.query("SELECT flyer FROM stands WHERE id = "+id).catch(error => hasError = error);
+    const results = await db.pool.query("SELECT ecran FROM stands WHERE id = "+id).catch(error => hasError = error);
     if(hasError==null && results[0].length != 0){
-        return results[0][0]["flyer"];
+        return results[0][0]["ecran"];
     }
     else if(hasError!=null){
         var message = '{ "success":false,'+
@@ -54,10 +54,10 @@ async function findFlyer(id){
 
 async function findFormations(id){ 
     var hasError = null;
-    const results = await db.pool.query("SELECT * FROM `formations` WHERE id = (SELECT idFormation FROM `lienformationstand` WHERE idStand="+id+")").catch(error => hasError = error);
+    const results = await db.pool.query("SELECT f.id,f.nom,f.representant,f.forms,c.id AS 'idCampus',c.nom AS 'nomCampus',c.localisation AS 'lieuCampus' FROM formations AS f, campus AS c WHERE f.id = (SELECT idFormation FROM `lienformationstand` WHERE idStand="+id+") AND c.id=f.idCampus").catch(error => hasError = error);
     if(hasError==null && results[0].length != 0){
         var message = '{ "success": true,'+
-        '"results":'+ JSON.stringify(results[0][0])+"}";
+        '"results":'+ JSON.stringify(results[0])+"}";
         return message;
     }
     else if(hasError!=null){
@@ -154,4 +154,4 @@ async function destroy(id){
     }
 }
 
-module.exports = {findAll,find,findFormations,findFlyer,create,createFormation,update,updateFlyer,destroy};
+module.exports = {findAll,find,findFormations,findEcran,create,createFormation,update,updateFlyer,destroy};

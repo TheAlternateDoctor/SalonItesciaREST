@@ -60,14 +60,16 @@ module.exports.getAccessToken = function(bearerToken) {
 module.exports.getUser = function *(username, password) {
     return db.pool.query('SELECT id FROM users WHERE username = \''+username+'\' AND password = \''+ password+'\'')
       .then(function(result) {
-        return result.length ? result[0] : false;
+        console.log(result[0].length)
+        return result[0].length !=0 ? result[0] : false;
       });
   };
 
   module.exports.saveToken = function *(token, client, user) {
     let accessExpiresOn = token['accessTokenExpiresAt'].getFullYear()+'-'+(token['accessTokenExpiresAt'].getMonth()+1)+"-"+token['accessTokenExpiresAt'].getDate()+" "+token['accessTokenExpiresAt'].getHours()+":"+token['accessTokenExpiresAt'].getMinutes()+":"+token['accessTokenExpiresAt'].getSeconds()
     let refreshExpiresOn = token['refreshTokenExpiresAt'].getFullYear()+'-'+(token['refreshTokenExpiresAt'].getMonth()+1)+"-"+token['refreshTokenExpiresAt'].getDate()+" "+token['refreshTokenExpiresAt'].getHours()+":"+token['refreshTokenExpiresAt'].getMinutes()+":"+token['refreshTokenExpiresAt'].getSeconds()
-    console.log(accessExpiresOn)
+    console.log(user)
+    console.log("Go!");
     return db.pool.query('INSERT INTO oauth_tokens(access_token, access_token_expires_on, client_id, refresh_token, refresh_token_expires_on, user_id)'+
       'VALUES (\''+token.accessToken+'\', \''+accessExpiresOn+'\', \''+client['clientID']+'\', \''+token.refreshToken+'\',\''+refreshExpiresOn+'\',\''+user[0].id+'\')')
       .then(function(result) {
